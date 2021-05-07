@@ -7,9 +7,14 @@ The library comprises the files bme280_spi.hpp and bme280_spi.cpp
 Using this library is very simple. An example is implemented by example.cpp.
 
 Copy the files to your system.
+
 Call 
+  
   cmake .
- and then
+ 
+and then
+
   make
+  
 within the installation folder.
 
