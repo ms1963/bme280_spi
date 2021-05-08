@@ -65,8 +65,9 @@ BME280::Measurement_t BME280::measure() {
     measurement.temperature = temperature / 100.0;
     // apply formula to retrieve altitude from air pressure
     // pressure at sea level required as a base
-    float pressure_sealevel = 1013.25;
-    measurement.altitude = 44330.0 * (1 -  pow(measurement.pressure / pressure_sealevel, 1 / 5.255));
+    float pressure0 = 1013.25;
+    float tmp = pow(measurement.pressure / pressure0, 1.0 / 5.255);
+    measurement.altitude = (measurement.temperature + 273.15) * (1 - tmp) / (tmp * 0.0065);
     
     return measurement;
 }
