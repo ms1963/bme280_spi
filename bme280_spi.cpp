@@ -170,7 +170,7 @@ void BME280::read_registers(uint8_t reg, uint8_t *buf, uint16_t len) {
 void BME280::read_compensation_parameters() {
    
 
-    read_registers(0x88, buffer, 24);
+    read_registers(0x88, buffer, 26);
 
     dig_T1 = buffer[0] | (buffer[1] << 8);
     dig_T2 = buffer[2] | (buffer[3] << 8);
