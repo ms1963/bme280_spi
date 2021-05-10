@@ -9,6 +9,7 @@
 
 
 
+
 /* The following compensation functions are required to convert from the raw ADC
 data from the chip to something usable. Each chip has a different set of
 compensation parameters stored on the chip at point of manufacture, which are
@@ -16,6 +17,10 @@ read from the chip at startup and used inthese routines.
 */
 
 class BME280 {
+public:
+    enum MODE { MODE_SLEEP = 0b00,
+                MODE_FORCED = 0b01,
+                MODE_NORMAL = 0b11};
 private:
     const uint READ_BIT = 0x80;
     int32_t     t_fine;
@@ -36,7 +41,37 @@ private:
     uint freq;
     uint8_t buffer[26]; // storage for compensation parameters
     uint8_t chip_id;
- 
+    MODE mode;
+
+struct MeasurementControl_t {
+    // temperature oversampling
+    // 000 = skipped
+    // 001 = x1
+    // 010 = x2
+    // 011 = x4
+    // 100 = x8
+    // 101 and above = x16
+    unsigned int osrs_t : 3; ///< temperature oversampling
+
+    // pressure oversampling
+    // 000 = skipped
+    // 001 = x1
+    // 010 = x2
+    // 011 = x4
+    // 100 = x8
+    // 101 and above = x16
+    unsigned int osrs_p : 3; ///< pressure oversampling
+
+    // device mode
+    // 00       = sleep
+    // 01 or 10 = forced
+    // 11       = normal
+    unsigned int mode : 2; ///< device mode
+
+    /// @return combined ctrl register
+    unsigned int get() { return (osrs_t << 5) | (osrs_p << 2) | mode; }
+}   measurement_reg; //!< measurement register object
+
 public:
     // struct used for transmitting sensor values 
     // from the sensor to the program
@@ -47,6 +82,8 @@ public:
         float altitude;
     } measurement;
 
+
+
     /*
     Constructor has the following default values for params
     uint spi_no    = 0, 
@@ -54,14 +91,16 @@ public:
     uint tx_pin    = PICO_DEFAULT_SPI_TX_PIN, 
     uint sck_pin   = PICO_DEFAULT_SPI_SCK_PIN, 
     uint cs_pin    = PICO_DEFAULT_SPI_CSN_PIN, 
-    uint freq      = 500 * 1000) {
+    uint freq      = 500 * 1000,
+    MODE mode      = MODE_NORMAL) {
     */
     BME280( uint spi_no, 
             uint rx_pin, 
             uint tx_pin, 
             uint sck_pin, 
-            uint cs_pin, 
-            uint freq   );
+            uint cs_pin,
+            uint freq,   
+            MODE mode);
 
 
     // get sensor values from BME280
@@ -83,6 +122,5 @@ private:
     void        read_registers(uint8_t reg, uint8_t *buf, uint16_t len);
     /* This function reads the manufacturing assigned compensation parameters from the device */
     void        read_compensation_parameters(); 
-
 };
 

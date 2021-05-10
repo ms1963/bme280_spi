@@ -8,14 +8,16 @@ BME280::BME280(  uint spi_no    = 0,
                  uint tx_pin    = PICO_DEFAULT_SPI_TX_PIN, 
                  uint sck_pin   = PICO_DEFAULT_SPI_SCK_PIN, 
                  uint cs_pin    = PICO_DEFAULT_SPI_CSN_PIN, 
-                 uint freq      = 500 * 1000) {
+                 uint freq      = 500 * 1000,
+                 MODE mode      = MODE::MODE_NORMAL) {
 
-    this->spi_no  = spi_no;
-    this->rx_pin  = rx_pin;
-    this->tx_pin  = tx_pin;
-    this->sck_pin = sck_pin;
-    this->cs_pin  = cs_pin;
-    this->freq    = freq;
+    this->spi_no            = spi_no;
+    this->rx_pin            = rx_pin;
+    this->tx_pin            = tx_pin;
+    this->sck_pin           = sck_pin;
+    this->cs_pin            = cs_pin;
+    this->freq              = freq;
+    measurement_reg.mode    = mode;
        
     switch (spi_no) {
         case 0: spi_hw = spi0;
@@ -45,13 +47,26 @@ BME280::BME280(  uint spi_no    = 0,
   
     // read compensation params once
     read_compensation_parameters();
-
+    
+    measurement_reg.osrs_p = 0b011; // x4 Oversampling
+    measurement_reg.osrs_t = 0b011; // x4 Oversampling
+    write_register(0xF4, MODE::MODE_SLEEP); //SLEEP_MODE ensures configuration is saved
+ 
+    // save configuration
     write_register(0xF2, 0x1); // Humidity oversampling register - going for x1
-    write_register(0xF4, 0x27);// Set rest of oversampling modes and run mode to normal
+    write_register(0xF4, measurement_reg.get());// Set rest of oversampling modes and run mode to normal
 };
 
 BME280::Measurement_t BME280::measure() {
     int32_t pressure, humidity, temperature;
+    if (measurement_reg.mode = MODE::MODE_FORCED) {
+        write_register(0xf4, measurement_reg.get());
+        uint8_t buffer;
+        do {
+            read_registers(0xf3, &buffer, 1);
+            sleep_ms(1);
+        } while (buffer & 0x08); // loop until measurement completed
+    }
     // read raw sensor data from BME280
     bme280_read_raw(&humidity,
                     &pressure,
@@ -200,7 +215,6 @@ void BME280::read_compensation_parameters() {
 // this functions reads the raw data values from the sensor
 void BME280::bme280_read_raw(int32_t *humidity, int32_t *pressure, int32_t *temperature) {
     uint8_t readBuffer[8];
-
     read_registers(0xF7, readBuffer, 8);
     *pressure = ((uint32_t) readBuffer[0] << 12) | ((uint32_t) readBuffer[1] << 4) | (readBuffer[2] >> 4);
     *temperature = ((uint32_t) readBuffer[3] << 12) | ((uint32_t) readBuffer[4] << 4) | (readBuffer[5] >> 4);

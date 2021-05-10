@@ -11,14 +11,16 @@ int main() {
     stdio_init_all();
     sleep_ms(3000); // required fro some OSses to make Pico visible
 
-
-    // Using BME280 with default GPIO - Ports and 500 KHz frequency
+    // using default SPI pins
+    // frequency = 0.5 MHz
+    // FORCED_MODE to reduce energy consumption
     BME280 myBME280(0, 
             PICO_DEFAULT_SPI_RX_PIN, 
             PICO_DEFAULT_SPI_TX_PIN, 
             PICO_DEFAULT_SPI_SCK_PIN, 
             PICO_DEFAULT_SPI_CSN_PIN, 
-            500 * 1000);
+            500 * 1000,
+            BME280::MODE::MODE_FORCED);
     BME280::Measurement_t values;
 
     // empty read as a warm-up
