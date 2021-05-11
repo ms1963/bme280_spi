@@ -25,5 +25,6 @@ enum MODE {     MODE_SLEEP = 0b00,
                 MODE_FORCED = 0b01,
                 MODE_NORMAL = 0b11   };
                 
-MODE_FORCED implies that  the sensor will only consume very low 
-power between measurements. It only will wake up when BME280::measure() is called.
+MODE_FORCED implies that  the sensor will consume very low  power between measurements. 
+It only will wake up when BME280::measure() is called. Thus, use this mode for low
+power applications.
