@@ -9,7 +9,7 @@
 
 int main() {
     stdio_init_all();
-    sleep_ms(3000); // required fro some OSses to make Pico visible
+    sleep_ms(3000); // required for some OSses to make Pico visible
 
     // using default SPI pins
     // frequency = 0.5 MHz
