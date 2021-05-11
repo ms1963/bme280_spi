@@ -18,3 +18,12 @@ and then
   
 within the installation folder.
 
+The constructor of BME280 expects a parameter called mode. 
+It is of type:
+
+enum MODE {     MODE_SLEEP = 0b00,
+                MODE_FORCED = 0b01,
+                MODE_NORMAL = 0b11   };
+                
+MODE_FORCED implies that  the sensor will only consume very low 
+power between measurements. It only will wake up when BME280::measure() is called.
